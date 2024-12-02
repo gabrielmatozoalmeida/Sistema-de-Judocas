@@ -18,6 +18,13 @@
         <exec.mainClass>org.fpij.jitakyoei.util.Main</exec.mainClass>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>genesis-repo</id>
+            <url>https://github.com/gabrielmatozoalmeida/Sistema-de-Judocas/tree/master/lib/genesis</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>net.java.dev.genesis.annotation</groupId>
