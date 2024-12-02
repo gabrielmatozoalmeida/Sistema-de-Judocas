@@ -18,7 +18,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # Set up JDK 17
+    # Set up JDK
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -26,24 +26,21 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    # Build the project using Maven
+    # Build the project
     - name: Build with Maven
       run: mvn clean package
 
-    # Run tests and display test results
-    - name: Display Test Results
-      run: |
-        if [ -d "target/surefire-reports" ]; then
-          echo "Test Results:"
-          cat target/surefire-reports/*.txt
-        else
-          echo "No test reports found."
-        fi
-
-    # Upload test reports as artifacts
-    - name: Upload Test Reports
-      if: always() # Ensure this runs even if previous steps fail
-      uses: actions/upload-artifact@v3
+    # Dependency submission
+    - name: Submit Dependency Snapshot
+      uses: advanced-security/maven-dependency-tree-action@v1
       with:
-        name: Test Reports
-        path: target/surefire-reports/*.txt
+        repository: ${{ github.repository }}
+        ref: ${{ github.ref }}
+        sha: ${{ github.sha }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Display dependency submission results
+    - name: Display Submission Results
+      run: echo "Dependency snapshot submission completed."
+      if: success() # Only runs if previous steps succeeded
