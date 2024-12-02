@@ -1,12 +1,12 @@
+# Workflow para construir e testar um projeto Java com Maven no GitHub Actions
+
 name: Java CI with Maven
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "master" ]
   pull_request:
-    branches:
-      - main
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -14,11 +14,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
-    - name: Checkout Code
+    # Clonar o repositório
+    - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Set up JDK
+    # Configurar o JDK 17
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -26,21 +26,26 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    # Build the project
+    # Validar configuração Maven
+    - name: Validate Maven setup
+      run: mvn -version
+
+    # Etapa de build com Maven
     - name: Build with Maven
-      run: mvn clean package
+      run: mvn -B clean package --file pom.xml
 
-    # Dependency submission
-    - name: Submit Dependency Snapshot
-      uses: advanced-security/maven-dependency-tree-action@v1
+    # Testar com Maven
+    - name: Run tests with Maven
+      run: mvn test --file pom.xml
+
+    # (Opcional) Submeter o gráfico de dependências para o Dependabot
+    - name: Update dependency graph
+      uses: advanced-security/maven-dependency-submission-action@v1
+
+    # Publicar resultados dos testes
+    - name: Publish Test Report
+      if: always()
+      uses: actions/upload-artifact@v3
       with:
-        repository: ${{ github.repository }}
-        ref: ${{ github.ref }}
-        sha: ${{ github.sha }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # Display dependency submission results
-    - name: Display Submission Results
-      run: echo "Dependency snapshot submission completed."
-      if: success() # Only runs if previous steps succeeded
+        name: test-results
+        path: target/surefire-reports/
