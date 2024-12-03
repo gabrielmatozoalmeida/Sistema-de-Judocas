@@ -2,14 +2,12 @@ package org.fpij.jitakyoei.model.beans;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.fpij.jitakyoei.util.CorFaixa;
 import org.hibernate.cfg.Configuration;
-
 import java.util.Date;
 
 public class Faixa {
 
-    private CorFaixa cor;
+    private String cor;
     private Date dataEntrega;
 
     // Construtores
@@ -17,18 +15,18 @@ public class Faixa {
         super();
     }
 
-    public Faixa(CorFaixa cor, Date dataEntrega) {
+    public Faixa(String cor, Date dataEntrega) {
         super();
         this.cor = cor;
         this.dataEntrega = dataEntrega;
     }
 
     // Getters e Setters
-    public CorFaixa getCor() {
+    public String getCor() {
         return cor;
     }
 
-    public void setCor(CorFaixa cor) {
+    public void setCor(String cor) {
         this.cor = cor;
     }
 
@@ -43,50 +41,53 @@ public class Faixa {
     // Método toString
     @Override
     public String toString() {
-        return this.cor + " - " + this.dataEntrega;
+        return cor + " - " + dataEntrega;
     }
 
     // Validação de Faixa
-    public boolean isFaixaValida() {
-        return cor != null && dataEntrega != null && dataEntrega.before(new Date());
+    public boolean validarFaixa() {
+        return cor != null && !cor.isEmpty() && dataEntrega != null && dataEntrega.before(new Date());
     }
 
-    // Método para atualizar a faixa no banco e recarregar interface
-    public void atualizarFaixa(Faixa faixa) throws Exception {
+    // Atualizar a faixa no banco de dados
+    public boolean atualizarFaixa(Session session) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try {
             // Inicia uma transação
             transaction = session.beginTransaction();
 
-            // Validação de dados
-            if (!faixa.isFaixaValida()) {
+            // Valida a faixa antes da atualização
+            if (!this.validarFaixa()) {
                 throw new IllegalArgumentException("Dados da faixa inválidos.");
             }
 
-            // Atualiza faixa no banco
-            session.update(faixa);
+            // Atualiza a faixa no banco de dados
+            session.update(this);
 
             // Confirma a transação
             transaction.commit();
 
-            // Recarrega os dados da interface
-            carregarDadosInterface(faixa);
+            // Recarrega a interface com os dados atualizados
+            recarregarInterface();
+
+            return true;
 
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback(); // Reverte alterações em caso de erro
             }
-            throw new Exception("Erro ao atualizar faixa: " + e.getMessage(), e);
+            System.err.println("Erro ao atualizar faixa: " + e.getMessage());
+            return false;
         }
     }
 
-    // Método para recarregar a interface com os dados atualizados
-    private void carregarDadosInterface(Faixa faixa) {
-        System.out.println("Dados atualizados: " + faixa);
-        // Aqui, você pode integrar com a lógica real da interface gráfica
+    // Método para recarregar a interface
+    private void recarregarInterface() {
+        // Simula a recarga da interface
+        System.out.println("Interface recarregada com dados atualizados: " + this);
     }
 
-    // Hibernate Util para gerenciar sessões
+    // Hibernate Utility para gerenciar sessões
     static class HibernateUtil {
         private static final org.hibernate.SessionFactory sessionFactory = buildSessionFactory();
 
@@ -104,6 +105,20 @@ public class Faixa {
 
         public static void shutdown() {
             getSessionFactory().close();
+        }
+    }
+
+    // Exemplo de uso
+    public static void main(String[] args) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Faixa faixa = new Faixa("Preta", new Date(System.currentTimeMillis() - 86400000L)); // Data de ontem
+            if (faixa.atualizarFaixa(session)) {
+                System.out.println("Faixa atualizada com sucesso.");
+            } else {
+                System.out.println("Falha ao atualizar a faixa.");
+            }
+        } finally {
+            HibernateUtil.shutdown();
         }
     }
 }
