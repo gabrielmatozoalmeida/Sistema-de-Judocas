@@ -1,36 +1,11 @@
-package org.fpij.jitakyoei.util;
-
-import java.util.Date;
-
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
-
-import org.fpij.jitakyoei.facade.AppFacade;
-import org.fpij.jitakyoei.facade.AppFacadeImpl;
-import org.fpij.jitakyoei.model.beans.Endereco;
-import org.fpij.jitakyoei.model.beans.Entidade;
-import org.fpij.jitakyoei.model.beans.Filiado;
-import org.fpij.jitakyoei.model.beans.Professor;
-import org.fpij.jitakyoei.model.dao.DAO;
-import org.fpij.jitakyoei.model.dao.DAOImpl;
-import org.fpij.jitakyoei.view.AppView;
-import org.fpij.jitakyoei.view.MainAppView;
+import java.util.Date;
 
 public class Main {
 
     public static void main(String[] args) {
-        // Configuração do LookAndFeel
-        try {
-            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Erro ao configurar LookAndFeel: " + e.getMessage());
-            e.printStackTrace();
-        }
+        configureLookAndFeel();
 
         // Inicialização da aplicação
         AppView view = new MainAppView();
@@ -41,17 +16,44 @@ public class Main {
         dbPopulator();
     }
 
+    private static void configureLookAndFeel() {
+        try {
+            boolean nimbusSet = false;
+            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    nimbusSet = true;
+                    System.out.println("Nimbus LookAndFeel aplicado com sucesso.");
+                    break;
+                }
+            }
+            if (!nimbusSet) {
+                System.out.println("Nimbus LookAndFeel não disponível. Aplicando padrão do sistema.");
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao configurar o LookAndFeel. Aplicando o padrão do sistema.");
+            e.printStackTrace();
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ex) {
+                System.err.println("Erro ao aplicar o LookAndFeel padrão do sistema. Encerrando aplicação.");
+                ex.printStackTrace();
+                System.exit(1);
+            }
+        }
+    }
+
     public static void dbPopulator() {
         // Configuração de endereço com validação
         Endereco endereco = new Endereco();
         String cep = "64078-213";
-        if (cep.matches("\\d{5}-\\d{3}")) { // Validação de formato do CEP (XXXXX-XXX)
+        if (cep.matches("\\d{5}-\\d{3}")) {
             endereco.setCep(cep);
         } else {
             System.err.println("CEP inválido: " + cep);
             return;
         }
-
         endereco.setBairro("Dirceu");
         endereco.setCidade("Teresina");
         endereco.setEstado("PI");
@@ -60,7 +62,7 @@ public class Main {
         // Configuração de filiado (Professor) com validação de CPF
         Filiado filiadoProf = new Filiado();
         String cpf = "036.464.453-27";
-        if (cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) { // Validação de formato do CPF
+        if (cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) {
             filiadoProf.setCpf(cpf);
         } else {
             System.err.println("CPF inválido: " + cpf);

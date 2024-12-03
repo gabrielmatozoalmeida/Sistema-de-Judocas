@@ -2,22 +2,39 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "master" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    # Checkout do repositório
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Configuração do JDK 17
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v3
       with:
-        java-version: '17'
         distribution: 'temurin'
-        cache: maven
+        java-version: '17'
+
+    # Cache para pacotes Maven
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+
+    # Instalação das dependências e build do projeto
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn clean install
+
+    # Execução dos testes
+    - name: Run tests
+      run: mvn test
