@@ -73,6 +73,8 @@ public class AlunoForm {
 		}
 		entidadeCombo.setSelectedItem(null);
 	}
+
+	/*A ausência de validação para campos obrigatórios antes de salvar os dados está relacionada à falta de checagens em vários pontos*/
 	
 	/* Métodos de acesso ao dados da GUI */
 	public Entidade getEntidade() {
