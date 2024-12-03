@@ -11,15 +11,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Checkout do repositório
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    # Configuração do JDK 17
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
         java-version: '17'
 
+    # Cache para pacotes Maven
     - name: Cache Maven packages
       uses: actions/cache@v3
       with:
@@ -28,8 +31,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
 
-    - name: Install dependencies and build
+    # Instalação das dependências e build do projeto
+    - name: Build with Maven
       run: mvn clean install
 
+    # Execução dos testes
     - name: Run tests
       run: mvn test

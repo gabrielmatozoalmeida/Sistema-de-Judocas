@@ -1,3 +1,7 @@
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+import java.util.Date;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -41,7 +45,7 @@ public class Main {
     }
 
     public static void dbPopulator() {
-        // Configuração de endereço
+        // Configuração de endereço com validação
         Endereco endereco = new Endereco();
         String cep = "64078-213";
         if (cep.matches("\\d{5}-\\d{3}")) {
@@ -55,7 +59,7 @@ public class Main {
         endereco.setEstado("PI");
         endereco.setRua("Rua Des. Berilo Mota");
 
-        // Configuração de filiado (Professor)
+        // Configuração de filiado (Professor) com validação de CPF
         Filiado filiadoProf = new Filiado();
         String cpf = "036.464.453-27";
         if (cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) {
